@@ -84,7 +84,7 @@ class TicTacToe:
 					start = time.perf_counter_ns()
 					value, action = self.minimax_algorithm(self.board)
 					duration = time.perf_counter_ns() - start
-					print(f"Your duration was {duration // 1000000}ms. Minimax answer : [{value}, {action}]")
+					print(f"Algorithm duration : {duration // 1000000}ms. Minimax answer : [{value}, {action}]")
 					# print(f"LAST MIN VALUE : {value} ; {action}")
 					# exit(1)
 					# actions = self.get_actions(self.board)
@@ -221,9 +221,11 @@ class TicTacToe:
 		return actions
 
 	def minimax_algorithm(self, board: list[list[str]], DEPTH: int = 0):
-		# print(self.board)
+		# print(DEPTH)
 		if self.terminal_state(board):
 			return self.state_board(board), None
+		# if DEPTH > 4:
+		# 	return self.state_board(board), None
 
 		if self.get_player_turn(board) == self.maximizing_player:
 			value = float('-inf')
@@ -234,6 +236,8 @@ class TicTacToe:
 				if state > value:
 					value = state
 					best_action = action
+				if state == 1:
+					break
 			# print(f"DEPTH : {DEPTH}")
 			return value, best_action
 
@@ -252,6 +256,8 @@ class TicTacToe:
 				if state < value:
 					value = state
 					best_action = action
+				if state == -1:
+					break
 			# print(f"DEPTH : {DEPTH}")
 			return value, best_action
 
