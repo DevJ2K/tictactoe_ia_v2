@@ -7,3 +7,4 @@ A tictactoe IA using MiniMax Algorithm.
 - [ ] If we found a loose, skip others tree
 - [ ] Alpha-beta pruning
 - [ ] Adapt the depth base on the state of the game
+- [ ] The game is not terminate, evaluate the best choice. For example in Chess Game, your pieces remaining less opponents pieces remaining
