@@ -26,7 +26,45 @@ def test_terminal_state_true():
 	assert TicTacToe().terminal_state([["X", " ", " "], [" ", "X", " "], [" ", " ", "X"]]) == True
 	assert TicTacToe().terminal_state([[" ", " ", "X"], [" ", "X", " "], ["X", " ", " "]]) == True
 
+	# Tie
+	assert TicTacToe().terminal_state([["O", "O", "X"], ["X", "X", "O"], ["O", "O", "X"]]) == True
+	assert TicTacToe().terminal_state([
+		["O", "X", "X"],
+		["X", "X", "O"],
+		["O", "O", "X"]
+		]) == True
+
 def test_terminal_state_false():
 	assert TicTacToe().terminal_state([[" ", " ", " "], [" ", " ", " "], [" ", " ", " "]]) == False
 	assert TicTacToe().terminal_state([[" ", " ", " "], [" ", "X", "X"], [" ", " ", " "]]) == False
 	assert TicTacToe().terminal_state([["X", " ", " "], [" ", "X", "X"], [" ", " ", " "]]) == False
+
+def test_state_board():
+	assert TicTacToe().state_board([["O", "O", "X"], ["X", "X", "O"], ["O", "O", "X"]]) == 0
+	assert TicTacToe(who_start='O').state_board([
+		["O", "X", "X"],
+		["O", "O", "O"],
+		["O", "X", "X"]
+		]) == 1
+	assert TicTacToe(who_start='X').state_board([
+		["X", "X", "X"],
+		["O", "O", "O"],
+		["O", "X", "X"]
+		]) == 1
+	assert TicTacToe(who_start='X').state_board([
+		["O", "X", "X"],
+		["X", "X", "O"],
+		["O", "O", "X"]
+		]) == 0
+
+def test_simulate_action():
+	assert TicTacToe(who_start='O').simulate_action([
+		["O", " ", "X"],
+		["X", "X", "O"],
+		["O", "O", "X"]
+		], action=(0, 1)) == [["O", "O", "X"],["X", "X", "O"],["O", "O", "X"]]
+	assert TicTacToe(who_start='O').simulate_action([
+		["O", " ", "X"],
+		["X", " ", "O"],
+		["O", "O", "X"]
+		], action=(1, 1)) == [["O", " ", "X"],["X", "X", "O"],["O", "O", "X"]]
