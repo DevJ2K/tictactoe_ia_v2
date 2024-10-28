@@ -81,11 +81,14 @@ class TicTacToe:
 				pass
 			else:
 				if self.IA == True:
-					value = self.minimax_algorithm(self.board)
-					print(f"LAST MIN VALUE : {value}")
-					exit(1)
-					actions = self.get_actions(self.board)
-					self.board = self.simulate_action(self.board, random.choice(actions))
+					start = time.perf_counter_ns()
+					value, action = self.minimax_algorithm(self.board)
+					duration = time.perf_counter_ns() - start
+					print(f"Your duration was {duration // 1000000}ms. Minimax answer : [{value}, {action}]")
+					# print(f"LAST MIN VALUE : {value} ; {action}")
+					# exit(1)
+					# actions = self.get_actions(self.board)
+					self.board = self.simulate_action(self.board, action)
 				else:
 					player_choice = None
 					while (player_choice == None):
@@ -193,20 +196,18 @@ class TicTacToe:
 		if (action[0] < 0 or action[0] > 2 or action[1] < 0 or action[1] > 2):
 			raise TicTacToeError("Index out of range")
 		if board[action[0]][action[1]] == " ":
-			print("HERE")
 			new_board = [["", "", ""],["", "", ""],["", "", ""]]
-			print(board)
 			for i in range(len(board)):
 				for j in range(len(board[i])):
 					new_board[i][j] = board[i][j]
 			new_board[action[0]][action[1]] = self.get_player_turn(new_board)
-			print(new_board)
+			# print(new_board)
 			return new_board
 		else:
-			print(BHRED)
-			print(board)
-			print(action)
-			print(RESET)
+			# print(BHRED)
+			# print(board)
+			# print(action)
+			# print(RESET)
 			raise TicTacToeError(f"Slot [{action[0]}][{action[1]}] already use")
 
 	def get_actions(self, board: list[list[str]]) -> list[tuple[int, int]]:
@@ -220,29 +221,42 @@ class TicTacToe:
 		return actions
 
 	def minimax_algorithm(self, board: list[list[str]], DEPTH: int = 0):
-		print(self.board)
+		# print(self.board)
 		if self.terminal_state(board):
-			return self.state_board(board)
+			return self.state_board(board), None
 
 		if self.get_player_turn(board) == self.maximizing_player:
 			value = float('-inf')
-			# print(self.get_actions(board))
-			# print(BHBLUE, board, RESET)
+			best_action = None
+
 			for action in self.get_actions(board):
-				value = max(value, self.minimax_algorithm(self.simulate_action(board, action), DEPTH + 1))
-			print(f"DEPTH : {DEPTH}")
-			print(value)
-			return value
+				state, return_action = self.minimax_algorithm(self.simulate_action(board, action), DEPTH + 1)
+				if state > value:
+					value = state
+					best_action = action
+			# print(f"DEPTH : {DEPTH}")
+			return value, best_action
 
 		elif self.get_player_turn(board) == self.minimizing_player:
 			value = float('+inf')
-			# print(self.get_actions(board))
-			# print(BHYELLOW, board, RESET)
+			best_action = None
+
+			# for action in self.get_actions(board):
+			# 	value = min(value, self.minimax_algorithm(self.simulate_action(board, action), DEPTH + 1))
+			# print(f"DEPTH : {DEPTH}")
+			# print(value)
+			# return value
+
 			for action in self.get_actions(board):
-				value = min(value, self.minimax_algorithm(self.simulate_action(board, action), DEPTH + 1))
-			print(f"DEPTH : {DEPTH}")
-			print(value)
-			return value
+				state, return_action = self.minimax_algorithm(self.simulate_action(board, action), DEPTH + 1)
+				if state < value:
+					value = state
+					best_action = action
+			# print(f"DEPTH : {DEPTH}")
+			return value, best_action
+
+
+
 		else:
 			raise TicTacToeError("Player turn error.")
 
@@ -251,7 +265,7 @@ if __name__ == "__main__":
 	# PLAYER IS 'X'
 	# OPPONENT IS 'O'
 	tictactoe = TicTacToe(who_start='O', IA=True, board=[
-		["O", "X", " "],
+		[" ", " ", " "],
 		[" ", " ", " "],
 		[" ", " ", " "]
 		])
