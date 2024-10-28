@@ -68,3 +68,20 @@ def test_simulate_action():
 		["X", " ", "O"],
 		["O", "O", "X"]
 		], action=(1, 1)) == [["O", " ", "X"],["X", "X", "O"],["O", "O", "X"]]
+
+def test_get_actions():
+	assert TicTacToe().get_actions([
+		["O", " ", "X"],
+		["X", " ", "O"],
+		["O", "O", "X"]
+		]) == [(0, 1), (1, 1)]
+	assert TicTacToe().get_actions([
+		[" ", " ", "X"],
+		["X", " ", "O"],
+		["O", "O", "X"]
+		]) == [(0, 0), (0, 1), (1, 1)]
+	assert TicTacToe().get_actions([
+		["O", "X", "X"],
+		["X", "O", "O"],
+		["O", "O", "X"]
+		]) == []
