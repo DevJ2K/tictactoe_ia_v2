@@ -1,4 +1,5 @@
 import time
+import threading
 import random
 import copy
 import os
@@ -43,6 +44,8 @@ def convert_input_to_board(number: str) -> tuple[int, int]:
 			return (2, 2)
 	return None
 
+OPTIMIZATION = True
+
 class TicTacToe:
 	def __init__(self, who_start: str = 'X', IA: bool = True, board: list[list[str]] = [
 			[" ", " ", " "],
@@ -81,13 +84,17 @@ class TicTacToe:
 				pass
 			else:
 				if self.IA == True:
-					start = time.perf_counter_ns()
+					# start_multithreading = time.perf_counter_ns()
+					# tmp = self.multi_threading_minimax(self.board)
+					# duration_threading = time.perf_counter_ns() - start_multithreading
+					# print(f"Algorithm with Multithreading : {duration_threading // 1000000}ms.")
+
+					start_classic = time.perf_counter_ns()
 					value, action = self.minimax_algorithm(self.board)
-					duration = time.perf_counter_ns() - start
-					print(f"Algorithm duration : {duration // 1000000}ms. Minimax answer : [{value}, {action}]")
-					# print(f"LAST MIN VALUE : {value} ; {action}")
-					# exit(1)
-					# actions = self.get_actions(self.board)
+					duration_classic = time.perf_counter_ns() - start_classic
+					print(f"Algorithm without Multithreading : {duration_classic // 1000000}ms.")
+					print(f"Minimax answer : [{value}, {action}]")
+
 					self.board = self.simulate_action(self.board, action)
 				else:
 					player_choice = None
@@ -179,7 +186,9 @@ class TicTacToe:
 		0 : Tie
 		-1: Minimizing player wins
 		"""
-		if self.terminal_state(board) == False:
+		if  self.terminal_state(board) == False:
+			if OPTIMIZATION:
+				return 0
 			raise MinimaxError("The game is not terminate yet to get the state")
 		if self.game_has_a_winner(board) == False:
 			return 0
@@ -211,21 +220,33 @@ class TicTacToe:
 			raise TicTacToeError(f"Slot [{action[0]}][{action[1]}] already use")
 
 	def get_actions(self, board: list[list[str]]) -> list[tuple[int, int]]:
+		# return [(i, j) for i in range(len(board)) for j in range(len(board[i])) if board[i][j] == ' ']
 		actions = []
-
 		for i in range(len(board)):
 			for j in range(len(board[i])):
 				if board[i][j] == ' ':
 					actions.append((i, j))
-		# return [(i, j) for i in range(len(board)) for j in range(len(board[i])) if board[i][j] == ' ']
 		return actions
+
+	def multi_threading_minimax(self, board: list[list[str]]):
+		DEPTH = 0
+		thread_list: list[threading.Thread] = []
+		for action in self.get_actions(board):
+			thread_item = threading.Thread(target=self.minimax_algorithm, args=(self.simulate_action(board, action), DEPTH + 1))
+			thread_list.append(thread_item)
+		for thread in thread_list:
+			thread.start()
+			thread.join()
+
+
 
 	def minimax_algorithm(self, board: list[list[str]], DEPTH: int = 0):
 		# print(DEPTH)
+		# print(board)
 		if self.terminal_state(board):
 			return self.state_board(board), None
-		# if DEPTH > 4:
-		# 	return self.state_board(board), None
+		if OPTIMIZATION and DEPTH > 4:
+			return self.state_board(board), None
 
 		if self.get_player_turn(board) == self.maximizing_player:
 			value = float('-inf')
@@ -236,7 +257,7 @@ class TicTacToe:
 				if state > value:
 					value = state
 					best_action = action
-				if state == 1:
+				if OPTIMIZATION and state == 1:
 					break
 			# print(f"DEPTH : {DEPTH}")
 			return value, best_action
@@ -256,7 +277,7 @@ class TicTacToe:
 				if state < value:
 					value = state
 					best_action = action
-				if state == -1:
+				if OPTIMIZATION and state == -1:
 					break
 			# print(f"DEPTH : {DEPTH}")
 			return value, best_action
@@ -274,6 +295,6 @@ if __name__ == "__main__":
 		[" ", " ", " "],
 		[" ", " ", " "],
 		[" ", " ", " "]
-		])
+	])
 	tictactoe.play()
 	# tictactoe.display_board()
