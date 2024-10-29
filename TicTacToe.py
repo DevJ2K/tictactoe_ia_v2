@@ -44,7 +44,6 @@ def convert_input_to_board(number: str) -> tuple[int, int]:
 			return (2, 2)
 	return None
 
-OPTIMIZATION = True
 
 class TicTacToe:
 	def __init__(self, who_start: str = 'X', IA: bool = True, board: list[list[str]] = [
@@ -63,8 +62,10 @@ class TicTacToe:
 		self.board = board
 
 	def play(self):
+		state_msg = None
 		while self.terminal_state(self.board) == False:
-			self.display_board(state=f"TICTACTOE TURN : {self.get_player_turn(self.board)}")
+			state_msg = f"TICTACTOE TURN : {self.get_player_turn(self.board)}" if state_msg is None else state_msg
+			self.display_board(state=state_msg)
 			if self.get_player_turn(self.board) == 'X':
 				player_choice = None
 				while (player_choice == None):
@@ -84,16 +85,12 @@ class TicTacToe:
 				pass
 			else:
 				if self.IA == True:
-					# start_multithreading = time.perf_counter_ns()
-					# tmp = self.multi_threading_minimax(self.board)
-					# duration_threading = time.perf_counter_ns() - start_multithreading
-					# print(f"Algorithm with Multithreading : {duration_threading // 1000000}ms.")
-
 					start_classic = time.perf_counter_ns()
 					value, action = self.minimax_algorithm(self.board)
 					duration_classic = time.perf_counter_ns() - start_classic
-					print(f"Algorithm without Multithreading : {duration_classic // 1000000}ms.")
-					print(f"Minimax answer : [{value}, {action}]")
+					state_msg = f"IA take {duration_classic // 1000000}ms. Value : {value} , TURN TO : {self.get_player_turn(self.board)}"
+					# print(f"Algorithm without Multithreading : {duration_classic // 1000000}ms.")
+					# print(f"Minimax answer : [{value}, {action}]")
 
 					self.board = self.simulate_action(self.board, action)
 				else:
@@ -128,7 +125,7 @@ class TicTacToe:
 
 	def display_board(self, state: str, end_message: str = None) -> None:
 		board = self.board
-		# os.system('clear')
+		os.system('clear')
 		print(f"State : {state}")
 		print(" ___________ ")
 		print("|           |")
@@ -187,9 +184,8 @@ class TicTacToe:
 		-1: Minimizing player wins
 		"""
 		if  self.terminal_state(board) == False:
-			if OPTIMIZATION:
-				return 0
 			raise MinimaxError("The game is not terminate yet to get the state")
+			# return 0
 		if self.game_has_a_winner(board) == False:
 			return 0
 		if self.get_player_turn(board) == self.minimizing_player:
@@ -240,49 +236,55 @@ class TicTacToe:
 
 
 
-	def minimax_algorithm(self, board: list[list[str]], DEPTH: int = 0):
+	def minimax_algorithm(
+		self,
+		board: list[list[str]],
+		alpha: float = float("-inf"),
+		beta: float = float("+inf"),
+		DEPTH: int = 0
+	):
 		# print(DEPTH)
 		# print(board)
 		if self.terminal_state(board):
 			return self.state_board(board), None
-		if OPTIMIZATION and DEPTH > 4:
-			return self.state_board(board), None
 
 		if self.get_player_turn(board) == self.maximizing_player:
+			# print("HERE MAX")
+			# exit(1)
 			value = float('-inf')
 			best_action = None
 
 			for action in self.get_actions(board):
-				state, return_action = self.minimax_algorithm(self.simulate_action(board, action), DEPTH + 1)
+				state, return_action = self.minimax_algorithm(self.simulate_action(board, action), alpha, beta, DEPTH + 1)
+				# if (state != 1):
+				# 	print(f"MAXIMIZE PLAYER : {state}")
 				if state > value:
 					value = state
 					best_action = action
-				if OPTIMIZATION and state == 1:
+
+				alpha = max(alpha, state)
+				if beta <= alpha or state == 1:
 					break
-			# print(f"DEPTH : {DEPTH}")
 			return value, best_action
 
 		elif self.get_player_turn(board) == self.minimizing_player:
+			# print("HERE MINI")
+			# exit(1)
 			value = float('+inf')
 			best_action = None
 
-			# for action in self.get_actions(board):
-			# 	value = min(value, self.minimax_algorithm(self.simulate_action(board, action), DEPTH + 1))
-			# print(f"DEPTH : {DEPTH}")
-			# print(value)
-			# return value
-
 			for action in self.get_actions(board):
-				state, return_action = self.minimax_algorithm(self.simulate_action(board, action), DEPTH + 1)
+				# state, return_action = self.minimax_algorithm(self.simulate_action(board, action), DEPTH + 1)
+				state, return_action = self.minimax_algorithm(self.simulate_action(board, action), alpha, beta, DEPTH + 1)
+				# if (state != 1):
+				# 	print(f"MINIMIZE PLAYER : {state}")
 				if state < value:
 					value = state
 					best_action = action
-				if OPTIMIZATION and state == -1:
+				beta = min(beta, state)
+				if beta <= alpha or state == -1:
 					break
-			# print(f"DEPTH : {DEPTH}")
 			return value, best_action
-
-
 
 		else:
 			raise TicTacToeError("Player turn error.")
